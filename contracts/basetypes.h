@@ -1,5 +1,6 @@
 #pragma once
 
+#pragma pack(push,1)
 struct ledState{
 uint8_t brightness;
 uint16_t speed;
@@ -10,3 +11,5 @@ uint8_t nextAnimationId;
 uint32_t color;
 
 };
+
+#pragma pack(pop)
