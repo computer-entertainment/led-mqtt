@@ -45,6 +45,14 @@ Priorität sortiert angegeben:
 ## Topics
 Sofern nicht anders angegeben sind alle Zahlen *little-endian*.
 
+- `control`  
+  Informationen zu dem Zustand des Controllers.
+  - `activeModule` (Text)  
+    Gibt an, welches Modul aktuell die Steuerung der LEDs
+    übernimmt. Dabei kommen möglicherweise mehrere Module infrage und
+    das von Controller priorisierte Modul wird hier angegeben.
+  - `uptime` (4 Byte)  
+    Gibt in Sekunden an, wie lange der Controller bereits aktiv ist.
 - `display`  
   Enthält alle Informationen zu dem Inhalt, der aktuell angezeigt
   werden soll. Diese Informationen werden nicht direkt von den
