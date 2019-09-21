@@ -1,0 +1,42 @@
+
+# Datentypen
+Damit weniger topics an den NodeMCUs verwendet werden müssen, werden
+einige Informationen gebündelt als `struct` versendet. Hier wird die
+Bedeutung der einzelnen Parameter beschrieben.
+
+Falls nicht anders angegeben, sind alle Zahlen *little-endian*.
+
+## `struct` ledState
+Dieser Datentyp beschreibt einen Zustand der LED, bestehend aus einer
+Animation und Parametern für diese Animation.
+- `brightness` (`uint8`)  
+  Helligkeit der LEDs. Bei einem Wert von `0` sind alle LEDs
+  ausgeschaltet, bei `255` liegt die volle Helligkeit vor.
+- `speed` (`uint16`)  
+  Geschwindigkeit der Animation. Größere Werte führen zu dazu, dass
+  die Animation **langsamer** wird.
+- `fadeId` (`uint8`)  
+  Kennung der Überblendung, die beim Wechsel von Animationen verwendet
+  werden soll.
+- `fadeSpeed` (`uint16`)  
+  Dauer einer Überblendung, größere Werte bedeuten eine längere
+  Überblendungszeit.
+- `color` (`uint32`, bzw. `-RGB`)  
+  Die Hauptfarbe der Animation. Wird nicht von jeder Animation
+  berücksichtigt.
+- `currentAnimationId` (`uint8`)  
+  Die Kennung der aktuellen Animation.
+- `nextAnimationId` (`uint8`)  
+  Die Kennung der nächsten Animation.
+
+# Kennzahlen
+Die Animationen und Überblendungen werden von Kennzahlen beschrieben.
+
+## Animationen
+- `0`: Ausgeschaltet
+- `1`: Solide Farbe
+  - Die Farbe wird durch `color` festgelegt
+- `2`: Regenbogen
+
+## Überblendungen
+- 

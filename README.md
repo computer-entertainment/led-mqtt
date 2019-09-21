@@ -43,7 +43,9 @@ Priorität sortiert angegeben:
 
 
 ## Topics
-Sofern nicht anders angegeben sind alle Zahlen *little-endian*.
+Sofern nicht anders angegeben sind alle Zahlen *little-endian*. In
+einigen Topics werden Daten direkt in Form von `structs` verschickt,
+deren Form in [contracts](contracts) festgelegt sind.
 
 - `control`  
   Informationen zu dem Zustand des Controllers.
@@ -58,20 +60,24 @@ Sofern nicht anders angegeben sind alle Zahlen *little-endian*.
   werden soll. Diese Informationen werden nicht direkt von den
   Anwendungen verändert, sondern von dem Controller festgelegt, der
   die Prioritäten für die Anwendungen setzt.
-  - `animation` (1 byte)  
-    Die ID der aktuellen Animation. Die verwendeten
-    Animationsparameter hängen davon ab, welche Animation ausgewählt
-    wird.
-  - `color` (3 bytes, RGB)  
-    Die Hauptfarbe der LEDs, falls von der Animation unterstützt.
-  - `brightness` (1 byte)  
-    Gibt die Gesamthelligkeit der LEDs an. Bei `0` sind alle LEDs aus,
-    bei `255` liegt die volle Helligkeit vor.
-  - `speed` (2 bytes)  
-    Legt die Geschwindigkeit der Animation fest. Dabei ist die
-    Animation bei einem __größeren__ Wert __langsamer__.
-- `fernbedienung`  
+  - `ledState` (`struct ledState`)  
+    Legt die angezeigte Animation und alle Standardparameter von
+    Animationen fest. Diese sind in
+    [contracts/basetypes.h](contracts/basetypes.h) dokumentiert.
+- `remote`  
   Anfragen, die von der Fernbedienung stammen. Diese werden von der
   Fernbedienung festgelegt und von dem Controller nach `display`
   übertragen.
-  - *folgt noch*
+  - `ledState` (`struct ledState`)  
+    Legt die anzuzeigende Animation und alle Standardparameter von
+    Animationen fest. Diese sind in
+    [contracts/basetypes.h](contracts/basetypes.h) dokumentiert.
+- `music`  
+  Anfragen, die von der Audiosteuerung stammen.
+  
+  Dieses Modul unterscheidet sich in der Steuerung ein wenig von den
+  normalen Modulen, da eine möglichst geringe Latenz vorliegen
+  soll. Dazu wird die Musik auf dem Raspberry PI, der den Controller
+  preview  ausführt, analysiert und die resultierenden Anfragen direkt in
+  `display` geschrieben. So müssen die Werte nicht mehr in dieses
+  Topic kopiert werden.
