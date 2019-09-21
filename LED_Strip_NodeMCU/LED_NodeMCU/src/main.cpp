@@ -46,9 +46,11 @@ void loadDefaultLedState(){
     myLedState.brightness = (uint8_t) 128;
     myLedState.fadeId = (uint8_t) 0;
     myLedState.fadeSpeed = (uint16_t) 0;
-    myLedState.currentAnimationId = (uint8_t) 2;
-    myLedState.nextAnimationId = (uint8_t ) 0;
+    myLedState.animationId = (uint8_t) 3;
     myLedState.color = (uint32_t) 0xAA0000;
+    myLedState.decay = (uint8_t) 200;
+    myLedState.colorRotation = (float) 0;
+    myLedState.animationSize = (uint16_t)10;
 }
 
 void printLedState()
@@ -62,13 +64,16 @@ void printLedState()
     Serial.println(myLedState.fadeId,HEX);
     Serial.print("fadeSpeed: ");
     Serial.println(myLedState.fadeSpeed,HEX);
-    Serial.print("currentAnimationId: ");
-    Serial.println(myLedState.currentAnimationId,HEX);
-    Serial.print("nextAnimationId: ");
-    Serial.println(myLedState.nextAnimationId,HEX);
+    Serial.print("AnimationId: ");
+    Serial.println(myLedState.animationId,HEX);
     Serial.print("color (Hex): ");
     Serial.println(myLedState.color,HEX);
-    
+    Serial.print("decay: ");
+    Serial.println(myLedState.decay,HEX);
+    Serial.print("animationSize: ");
+    Serial.println(myLedState.animationSize, HEX);
+    Serial.print("colorRotation: ");
+    Serial.println(myLedState.colorRotation);
     Serial.println("-------");
 }
 
@@ -85,9 +90,20 @@ void off()
     fillColor(CRGB::Black);
 }
 
-void rainbow(uint32_t Frame, uint16_t from = 0, uint16_t to = NUM_LEDS, uint8_t deltahue = 5, uint8_t initialhue = 0)
+void rainbow(uint32_t frame, uint16_t from = 0, uint16_t to = NUM_LEDS, uint8_t deltahue = 5, uint8_t initialhue = 0)
 {
-    fill_rainbow(&leds[from], to - from, (initialhue + Frame * deltahue) % 255, deltahue);
+    fill_rainbow(&leds[from], to - from, (initialhue + frame * deltahue) % 255, deltahue);
+}
+
+void knightRider(uint32_t frame, uint16_t from = 0, uint16_t to = NUM_LEDS - 1){
+    uint16_t temp = frame % (2 * (to - from));
+    if(temp < to - from){   //Hinweg von from zu to
+        //Serial.println(from + temp);
+        leds[from + temp] = myLedState.color;
+    }else{
+        //Serial.println(to - temp + to - from);
+        leds[to - temp + to - from] = myLedState.color;
+    }
 }
 
 void setup()
@@ -108,11 +124,18 @@ void setup()
     reconnect();
 
 
-    fillColor(0x00AA00,0,300);
-    FastLED.show();
-    delay(1000);
-
+    if(client.connected()){
+        fillColor(0x00AA00,0,300);
+        FastLED.show();
+        delay(1000);
+    }
+    
     printLedState();
+    
+}
+
+void decayArea(uint8_t dimVal, uint16_t from = 0, uint16_t to = NUM_LEDS){
+    fadeToBlackBy(&leds[from], to - from, dimVal);
     
 }
 
@@ -121,29 +144,40 @@ void loop()
 
     if (!client.connected()) {
         reconnect();
-      }
-      client.loop();
+    }
+    client.loop();
     // put your main code here, to run repeatedly:
 
     if (myLedState.speed < currentSpeedVal)
     {
         currentSpeedVal = 0;
+        decayArea(myLedState.decay);
 
-        switch (myLedState.currentAnimationId)
+        switch (myLedState.animationId)
         {
         case 0:
             off();
             break;
         case 1:
             fillColor(CRGB(myLedState.color));
-            FastLED.show();
+
             break;
         case 2:
             rainbow(currentFrame);
-            currentFrame++;
-            FastLED.show();
+
             break;
+        case 3:
+            
+            knightRider(currentFrame + NUM_LEDS);
+            knightRider(currentFrame);
+        break;
+        case 4;
+
+        break;
         }
+
+        FastLED.show();
+        currentFrame++;
     }
     else
     {
@@ -191,7 +225,7 @@ void MQTTCallback(char *topic, byte *payload, unsigned int length)
 
 void reconnect() {
     // Loop until we're reconnected
-    while (!client.connected()) {
+    
       Serial.print("Attempting MQTT connection...");
       // Attempt to connect
       if (client.connect("ESP8266Client")) {
@@ -205,9 +239,9 @@ void reconnect() {
         Serial.print(client.state());
         Serial.println(" try again in 1 second");
         // Wait 1 second before retrying
-        delay(1000);
+        //delay(1000);
       }
-    }
+    
   }
 
 void serialEvent()
