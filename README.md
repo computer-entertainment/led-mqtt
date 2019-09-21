@@ -1,5 +1,46 @@
 # LED-Zentralsteuerung
 
+## Programmteile
+- Steuerung von LED-Streifen  
+  Die Steuerung des LED-Streifens wird von einem NodeMCU übernommen,
+  der per MQTT auf Anfragen für Animationen reagiert.
+  
+  Die Anfragen bestehen dabei nur aus einer Animations-ID und
+  möglicherweise zusätzlichen Parametern (s.u.). Die Berechnung der
+  resultierenden Helligkeitswerte zu bestimmten Zeitpunkten wird von
+  dem NodeMCU durchgeführt.
+- MQTT-Fernbedienung  
+  Die MQTT-Fernbedienung ist eine mögliche Quelle für
+  Animationsanfragen. Mit der Fernbedienung kann eine Animation
+  ausgewählt werden und ein zusätzlicher Parameter angepasst werden.
+  
+  Außerdem kann angegeben werden, dass die Fernbedienung keine Anfrage
+  liefern soll, damit in diesem Fall auf andere Quellen reagiert
+  werden kann.
+- MQTT-Broker  
+  Der verwendete MQTT-Broker kann grundsätzlich beliebig gewählt
+  werden, sollte aber eine möglichst geringe Latenz zu den restlichen
+  Komponenten besitzen.
+- Controller  
+  Der Controller entscheidet aus den Anfragen von verschiedenen
+  Quellen, welche Animation und welche zugehörigen Parameter
+  tatsächlich angezeigt werden sollen.
+
+## Steuermodule
+Im Folgenden werden kurz die Module beschrieben, die Anfragen für die
+LEDs machen können. Dabei werden die Steuermodule nach absteigender
+Priorität sortiert angegeben:
+
+- `remote`  
+  Die MQTT-Fernbedienung.
+- `music`  
+  Die Audiosteuerung.
+- `idle`  
+  Kein reguläres Modul ist aktiv, es gibt also keine konkreten
+  Anfragen. In diesem Fall darf die Steuerung entscheiden, welche
+  Animationen angezeigt werden, im Normalfall werden alle LEDs
+  ausgeschaltet.
+
 
 ## Topics
 Sofern nicht anders angegeben sind alle Zahlen *little-endian*.
