@@ -19,7 +19,7 @@ class LedState:
         self.fadeSpeed = 0
 
     def toBytes(self):
-        ba = struct.pack("<BBHHBBBxfBHB", self.animationId,
+        ba = struct.pack("<BBHHBBBxfBBH", self.animationId,
                          self.brightness, self.animationSize,
                          self.speed, self.color[2], self.color[1],
                          self.color[0], self.colorRotation,
