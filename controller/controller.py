@@ -56,6 +56,10 @@ def on_message(client, userdata, msg):
                 webState.colorRotation = float(payload)
             if msg.topic == "input/decay":
                 webState.decay = int(payload)
+            if msg.topic == "input/fadeId":
+                webState.fadeId = int(payload)
+            if msg.topic == "input/fadeSpeed":
+                webState.fadeSpeed = int(payload)
 
             client.publish("display/ledState", webState.toBytes())
     except Exception as e:
