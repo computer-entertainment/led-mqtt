@@ -9,16 +9,17 @@ class LedState:
         super().__init__()
 
         self.animationId = 1
-        self.brightness = 255
-        self.animationSize = 300
+        self.brightness = 60
+        self.animationSize = 10
         self.speed = 3000
-        self.color = (255, 255, 255)
+        self.color = [0, 255, 0]
         self.colorRotation = 0.0
-        self.decay = 0
+        self.decay = 255
         self.fadeId = 0
         self.fadeSpeed = 0
 
     def toBytes(self):
+        self.brightness = min(self.brightness, 80)
         ba = struct.pack("<BBHHBBBxfBBH", self.animationId,
                          self.brightness, self.animationSize,
                          self.speed, self.color[2], self.color[1],
@@ -50,7 +51,7 @@ def on_message(client, userdata, msg):
             if msg.topic == "input/speed":
                 webState.speed = int(payload)
             if msg.topic == "input/color":
-                webState.color = tuple(map(int, payload.split(",")))
+                webState.color = list(map(int, payload.split(",")))
             if msg.topic == "input/colorRotation":
                 webState.colorRotation = float(payload)
             if msg.topic == "input/decay":
