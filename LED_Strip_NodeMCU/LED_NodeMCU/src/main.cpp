@@ -39,6 +39,9 @@ unsigned long lastPause = 0; //letzes mal das die Animation nicht ausgeführ wur
 unsigned long currentMillis = 0;
 unsigned long fadeStartTime = 0;
 
+uint8_t colorOffset = 0;
+CHSV offsetColor = CHSV(0,0,0);
+
 bool fadeDone = true;
 
 // Animations Variablen, die über MQTT aktuallisiert werden:
@@ -47,14 +50,14 @@ struct ledState newLedState; // over mqtt transmitted ledstate, used to update m
 
 void loadDefaultLedState()
 {
-    myLedState.speed = (uint16_t)3000;
+    myLedState.speed = (uint16_t)100;
     myLedState.brightness = (uint8_t)128;
     myLedState.fadeId = (uint8_t)0;
     myLedState.fadeSpeed = (uint16_t)0;
     myLedState.animationId = (uint8_t)3;
     myLedState.color = (uint32_t)0xAA0000;
     myLedState.decay = (uint8_t)200;
-    myLedState.colorRotation = (float)0;
+    myLedState.colorRotation = (float)1;
     myLedState.animationSize = (uint16_t)10;
 }
 
@@ -92,18 +95,18 @@ void fillColor(CRGB color, CRGB *target = leds, uint16_t from = 0, uint16_t to =
 {
     for (int i = from; i < to; i++)
     {
-        target[i] = color;
+        target[i] = color + offsetColor;
     }
 }
 
 void off()
 {
-    fillColor(CRGB::Black);
+    fill_solid(&leds[0], NUM_LEDS, CRGB(0));
 }
 
 void rainbow(uint32_t frame, CRGB *target = leds, uint16_t from = 0, uint16_t to = NUM_LEDS, uint8_t deltahue = 5, uint8_t initialhue = 0)
 {
-    fill_rainbow(&target[from], to - from, (initialhue + frame * deltahue) % 255, deltahue);
+    fill_rainbow(&target[from], to - from, (colorOffset + frame * deltahue) % 255, deltahue);
 }
 
 void knightRider(uint32_t frame, CRGB *target = leds, struct ledState pLedState = myLedState, uint16_t from = 0, uint16_t to = NUM_LEDS - 1)
@@ -112,12 +115,12 @@ void knightRider(uint32_t frame, CRGB *target = leds, struct ledState pLedState 
     if (temp < to - from)
     { //Hinweg von from zu to
         //Serial.println(from + temp);
-        target[from + temp] = pLedState.color;
+        target[from + temp] = CRGB(pLedState.color) + offsetColor;
     }
     else
     {
         //Serial.println(to - temp + to - from);
-        target[to - temp + to - from] = pLedState.color;
+        target[to - temp + to - from] = pLedState.color + offsetColor;
     }
 }
 
@@ -200,6 +203,7 @@ void calculateLedColors(uint16_t frame, struct ledState pLedState = myLedState, 
     {
     case 0:
         off();
+        FastLED.show();
         break;
     case 1:
         fillColor(CRGB(pLedState.color));
@@ -237,9 +241,23 @@ void fade(uint8_t frame)
 
         calculateLedColors(frame, newLedState, fadeInColors);
         calculateLedColors(frame, myLedState, fadeOutColors);
+        
+        Serial.print("time diff: ");
+        Serial.println(currentMillis - fadeStartTime);
+        float fadeRatio = (float) (currentMillis - fadeStartTime) / newLedState.fadeSpeed;
 
-        blend(fadeOutColors, fadeInColors, leds, NUM_LEDS, (currentMillis - fadeStartTime) / newLedState.fadeSpeed);
+        Serial.print("fadeRatio: ");
+        Serial.println(fadeRatio);
+        blend(fadeInColors, fadeOutColors, leds, NUM_LEDS, fadeRatio * 255);
+
     }
+}
+
+uint32_t getColorCode(CRGB col){
+    uint32_t retval = 0;
+    memcpy(&retval, &col.raw, 3);
+    
+    return retval;
 }
 
 void loop()
@@ -252,7 +270,7 @@ void loop()
             FastLED.show();
             lastFrameTime = millis();
             fade(currentFrame);
-            
+            FastLED.show();
             currentFrame++;
         }
     }
@@ -260,20 +278,23 @@ void loop()
     {
 
         // next frame should be rendered and had time for potential error correction in the last 5s
-        if (currentMillis > lastFrameTime + myLedState.speed && lastPause + 5000 > currentMillis)
+        if ((currentMillis > lastFrameTime + myLedState.speed || currentMillis < lastFrameTime )&& lastPause + 5000 > currentMillis )
         {
             FastLED.show(); //show last calculated Frame than calculate next frame
             lastFrameTime = millis();
 
             decayArea(myLedState.decay);
 
+            //getColorCode(CRGB(CRGB(myLedState.color) + CHSV(myLedState.colorRotation, 0xFF, 0xFF)));
+
             if (myLedState.colorRotation != 0)
             {
-                //TO-DO   This color transformation needs to be debuged
-                Serial.print(myLedState.color, HEX);
-                Serial.print(" -> ");
-                myLedState.color = (uint32_t)(CRGB(myLedState.color) + CHSV(myLedState.colorRotation, 0xFF, 0xFF));
-                Serial.print(myLedState.color, HEX);
+                colorOffset = (uint8_t) (myLedState.colorRotation * currentFrame) %255;
+                offsetColor = CHSV(colorOffset, 125, 125);
+            }
+            else{
+                colorOffset = 0;
+                offsetColor = CHSV(0,0,0);
             }
 
             calculateLedColors(currentFrame, myLedState);
@@ -307,6 +328,7 @@ void updateLEDState()
     if (newLedState.colorRotation * 120000 > 255 * newLedState.speed)
     {
         newLedState.color = myLedState.color;
+        colorOffset = 0;
     }
 
     if (newLedState.fadeSpeed > 0)
@@ -316,7 +338,9 @@ void updateLEDState()
         memmove8(fadeOutColors, leds, NUM_LEDS * sizeof(CRGB));
         fadeStartTime = millis();
     }
-
+    else{
+        finishFade();
+    }
     FastLED.setBrightness(myLedState.brightness);
 }
 
@@ -369,7 +393,7 @@ void reconnect()
     {
         Serial.println("connected");
         // Once connected, publish an announcement...
-        client.publish("display/online", "hello world");
+        //client.publish("display/online", "hello world");
         // ... and resubscribe
         client.subscribe(mqttPath);
     }
