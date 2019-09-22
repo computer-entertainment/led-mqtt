@@ -45,6 +45,11 @@
     text-align: center;
     color: white;
     }
+
+    p6{
+	font-family: arimo;
+	text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -75,7 +80,19 @@
     <div class="button-wrapper">
       <button type="button" id="sa">SoundAuswerten</button>
     </div>
-    </p3>
+  </p3>
+
+  <p6>
+    <h2> Einstellungen </h2>
+    <h3> Brightness (0/100)  |  Speed (0/255hoch2) </h3>
+    <div class="button-wrapper">
+      <input type="number" id="bn" min="0" max="100"></input>  |  <input type="number" id="sp" min="0" max="25500"></input>
+    </div>  
+    <h3> Rot (0/255)  |  Grün (0/255)  |  Blau  (0/255) </h3>
+    <div class="button-wrapper">
+      <input type="number" id="rot" min="0" max="255">  |  <input type="number" id="grün" min="0" max="255">  |  <input type="number" id="blau" min="0" max="255">
+    </div>
+  </p6>
 
 <script>
     // const urli = "wss://172.16.3.193:10001"
@@ -84,6 +101,9 @@
   function knightRider(){
 	if(client.isConnected()){
 	    client.send("input/animationId", "3");
+	    client.send("input/brightness", ""+ document.getElementById("bn").value)
+	    client.send("input/speed", ""+ document.getElementById("sp").value)
+	    client.send("input/color", ""+ document.getElementById("rot").value + "," + document.getElementById("grün").value + "," + document.getElementById("blau").value)
 	};
     }
     
