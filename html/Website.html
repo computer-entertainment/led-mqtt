@@ -21,7 +21,9 @@
 	font-family: comic sans ms;
 	text-align: center;
     }
-    
+    p{
+	margin-bottom: 100px;
+    }
     p1{
 	font-family: ;
 	color: crimson;
@@ -50,13 +52,29 @@
 	font-family: arimo;
 	text-align: center;
     }
+
+    p10{
+	color: red;
+    }
+    p11{
+	color: green;
+    }
+    p12{
+	color: blue;
+    }
   </style>
 </head>
 <body>
   <h1><u> LED-Zentralsteuerung Fernbedienung </u> </h1>
+  <p3>
+  <div calss="button-wrapper">
+    <button type="button" id="df">default</button>
+  </div>
+  </p3>
 
-  <p style="color: white";> a </p>
-
+  </br>
+  </br>
+  
   <p1>
     <h2> Knight Rider </h2>
     <div class="button-wrapper">
@@ -64,31 +82,20 @@
     </div>
   </p1>
   
-  <p4> a </p4>
-  
   <p2>
-    <h2> Stroboskop </h2>
+    <h2> Stroboskop (0/4) </h2>
     <div class="button-wrapper">
-      <button type="button" id="st">Stroboskop</button>
+      <button type="button" id="st">Stroboskop</button> <input type="number" id="pulse" min="0" max="4"></input>
     </div>
   </p2>
-
-  <p style="color: white";> a </p>
   
-  <p3>
-    <h2> Sound Auswerten </h2>
-    <div class="button-wrapper">
-      <button type="button" id="sa">SoundAuswerten</button>
-    </div>
-  </p3>
-
   <p6>
     <h2> Einstellungen </h2>
-    <h3> Brightness (0/100)  |  Speed (0/255hoch2) </h3>
+    <h3> Brightness (0/100)  |  Speed (0/255hoch2)  |  <p11>R</p11><p10>E</p10><p11>G</p11><p12>E</p12><p10>N</p10><p11>B</p11>O<p12>G</p12><p10>E</p10><p11>N</p11>  (-50/50)  |  Decay  (0/255)</h3>
     <div class="button-wrapper">
-      <input type="number" id="bn" min="0" max="100"></input>  |  <input type="number" id="sp" min="0" max="25500"></input>
+      <input type="number" id="bn" min="0" max="100"></input>  |  <input type="number" id="sp" min="0" max="25500"></input>  |  <input type="number" id="rg" min="-50" max="50" step="0.05"></input>  |  <input type="number" id="dc" min="0" max="255"></input>
     </div>  
-    <h3> Rot (0/255)  |  Grün (0/255)  |  Blau  (0/255) </h3>
+    <h3> <p10> Rot (0/255) </p10> | <p11>  Grün (0/255) </p11>  | <p12>  Blau  (0/255) </p12> </h3>
     <div class="button-wrapper">
       <input type="number" id="rot" min="0" max="255">  |  <input type="number" id="grün" min="0" max="255">  |  <input type="number" id="blau" min="0" max="255">
     </div>
@@ -104,25 +111,30 @@
 	    client.send("input/brightness", ""+ document.getElementById("bn").value)
 	    client.send("input/speed", ""+ document.getElementById("sp").value)
 	    client.send("input/color", ""+ document.getElementById("rot").value + "," + document.getElementById("grün").value + "," + document.getElementById("blau").value)
+	    client.send("input/colorRotation", ""+ document.getElementById("rg").value)
+	    client.send("input/decay", ""+ document.getElementById("dc").value)
 	};
     }
     
     function stroboskop(){
 	if(client.isConnected()){
-	    client.send("input/animationId", "1");
-	    client.send("input/color", "0,255,0");
-	    client.send("input/brightness", "100");
-	    client.send("input/brightness", "50");
-	    client.send("input/brightness", "100");
+	    client.send("input/animationId", "4");
+	    client.send("input/brightness", ""+ document.getElementById("bn").value)
+	    client.send("input/speed", ""+ document.getElementById("sp").value)
+	    client.send("input/color", ""+ document.getElementById("rot").value + "," + document.getElementById("grün").value + "," + document.getElementById("blau").value)
+	    client.send("input/colorRotation", ""+ document.getElementById("rg").value)
+	    client.send("input/decay", ""+ document.getElementById("dc").value)
+	    client.send("input/animationSize", ""+document.getElementById("pulse").value)
 	    
 	};
     }
+
+  function defaulta(){
+      if(client.isConnected()){
+	  client.send("input/animationId", "0")
+      }
+  }
     
-    function soundAuswerten(){
-	if(client.isConnected()){
-	    client.send();
-	};
-    }
 
   window.onload = function() {
       client = new Paho.MQTT.Client("172.16.3.193", 10001, "/mqtt", "ID");
@@ -133,7 +145,7 @@
 
       document.getElementById("kr").onclick = knightRider;
       document.getElementById("st").onclick = stroboskop;
-      document.getElementById("sa").onclick = soundAuswerten;
+      document.getElementById("df").onclick = defaulta;
   }
 </script>
 </body>
