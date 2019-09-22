@@ -78,22 +78,29 @@
   <p1>
     <h2> Knight Rider </h2>
     <div class="button-wrapper">
-      <button type="button" id="kr">KnightRider</button>
+      <button type="button" id="kr">Knight Rider</button>
     </div>
   </p1>
   
   <p2>
-    <h2> Stroboskop (0/4) </h2>
+    <h2> Stroboskop (0/10) </h2>
     <div class="button-wrapper">
-      <button type="button" id="st">Stroboskop</button> <input type="number" id="pulse" min="0" max="4"></input>
+      <button type="button" id="st">Stroboskop</button> <input type="number" id="pulse" min="0" max="10"></input>
     </div>
   </p2>
+
+  <p1>
+    <h2> <p11>R</p11><p10>E</p10><p11>G</p11><p12>E</p12><p10>N</p10><p11>B</p11>O<p12>G</p12><p10>E</p10><p11>N</p11></h2>
+    <div class="button-wrapper">
+      <button type="button" id="re">Knight RiderRegenbogen</button>
+    </div>
+  </p1>
   
   <p6>
     <h2> Einstellungen </h2>
-    <h3> Brightness (0/100)  |  Speed (0/255hoch2)  |  <p11>R</p11><p10>E</p10><p11>G</p11><p12>E</p12><p10>N</p10><p11>B</p11>O<p12>G</p12><p10>E</p10><p11>N</p11>  (-50/50)  |  Decay  (0/255)</h3>
+    <h3> Brightness (0/80)  |  Speed (0/2000)  |  <p11>R</p11><p10>E</p10><p11>G</p11><p12>E</p12><p10>N</p10><p11>B</p11>O<p12>G</p12><p10>E</p10><p11>N</p11>  (-50/50)  |  Decay  (0/255)  |  FadeSpeed  (0/50000) </h3>
     <div class="button-wrapper">
-      <input type="number" id="bn" min="0" max="100"></input>  |  <input type="number" id="sp" min="0" max="25500"></input>  |  <input type="number" id="rg" min="-50" max="50" step="0.05"></input>  |  <input type="number" id="dc" min="0" max="255"></input>
+      <input type="number" id="bn" min="0" max="80"></input>  |  <input type="number" id="sp" min="0" max="2000"></input>  |  <input type="number" id="rg" min="-50" max="50" step="0.05"></input>  |  <input type="number" id="dc" min="0" max="255"></input>  |  <input type="number" id="fd" min="0" max="50000"></input>
     </div>  
     <h3> <p10> Rot (0/255) </p10> | <p11>  Grün (0/255) </p11>  | <p12>  Blau  (0/255) </p12> </h3>
     <div class="button-wrapper">
@@ -113,6 +120,7 @@
 	    client.send("input/color", ""+ document.getElementById("rot").value + "," + document.getElementById("grün").value + "," + document.getElementById("blau").value)
 	    client.send("input/colorRotation", ""+ document.getElementById("rg").value)
 	    client.send("input/decay", ""+ document.getElementById("dc").value)
+	    client.send("input/fadeSpeed", ""+ document.getElementById("fd").value)	 
 	};
     }
     
@@ -125,13 +133,19 @@
 	    client.send("input/colorRotation", ""+ document.getElementById("rg").value)
 	    client.send("input/decay", ""+ document.getElementById("dc").value)
 	    client.send("input/animationSize", ""+document.getElementById("pulse").value)
-	    
+	    client.send("input/fadeSpeed", ""+ document.getElementById("fd").value)	 	    
 	};
     }
 
   function defaulta(){
       if(client.isConnected()){
 	  client.send("input/animationId", "0")
+      }
+  }
+
+  function regenb(){
+      if(ylient.isConnected()){
+	  client.send("input/animationId", "2")
       }
   }
     
@@ -146,6 +160,7 @@
       document.getElementById("kr").onclick = knightRider;
       document.getElementById("st").onclick = stroboskop;
       document.getElementById("df").onclick = defaulta;
+      document.getElementById("re").onclick = regenb;
   }
 </script>
 </body>
