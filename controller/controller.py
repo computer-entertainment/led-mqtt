@@ -27,11 +27,18 @@ class LedState:
                          self.decay, self.fadeId, self.fadeSpeed)
         return ba
 
+    def merge_remote(self, bytes):
+        self.color[0], self.color[1], self.color[2], self.brightness, self.speed, self.decay = struct.unpack("<iiiiii", bytes)
+        self.speed = self.speed * 2
+
+
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
 
     # Alle subscriptions direkt nach dem Verbinden erneuern
     client.subscribe("input/#")
+    client.subscribe("remote/options")
+    client.subscribe("remote/animationmodus")
 
 
 def on_message(client, userdata, msg):
@@ -62,6 +69,16 @@ def on_message(client, userdata, msg):
                 webState.fadeSpeed = int(payload)
 
             client.publish("display/ledState", webState.toBytes())
+        elif msg.topic == "remote/options":
+            webState.merge_remote(msg.payload)
+            client.publish("display/ledState", webState.toBytes())
+        elif msg.topic == "remote/animationmodus":
+            payload = msg.payload.decode()
+            modes = {"aus": 0, "Stroboskob": 4, "Knight-Rider": 3, "Rainbow": 2, "Statisch": 1}
+            webState.animationId = modes[payload]
+
+            client.publish("display/ledState", webState.toBytes())
+
     except Exception as e:
         print("Exception")
         print(e)
