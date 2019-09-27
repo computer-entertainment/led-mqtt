@@ -5,13 +5,13 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-#include "../../../config.h"    //this file will be outside the repository when cloning
+#include "../../../../config.h"    //this file will be outside the repository when cloning
 // you can checkout how the config.h file is structured in exampleconfig.h and include it as following:
 // #include "../../../exampleconfig.h" 
 
 // Wlan configuration loaded from config.h:
-const char *ssid = WIFI_PASSWORD;
-const char *password = WIFI_SSID;
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PASSWORD;
 
 // MQTT configuration loaded from config.h
 const char *mqtt_server = MQTT_SERVER_IP;
@@ -401,7 +401,7 @@ void reconnect()
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
     boolean connectionResult = false;
-    if(MQTT_PASSWORD == "" && MQTT_USER == ""){
+    if(mqtt_password == "" && mqtt_user == ""){
         connectionResult = client.connect(mqtt_clientID);
     }
     else{
