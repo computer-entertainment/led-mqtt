@@ -5,10 +5,21 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-//MQTT und Wlan:
-const char *ssid = "Forum";
-const char *password = "Hack2019";
-const char *mqtt_server = "172.16.3.193";
+#include "../../../config.h"    //this file will be outside the repository when cloning
+// you can checkout how the config.h file is structured in exampleconfig.h and include it as following:
+// #include "../../../exampleconfig.h" 
+
+// Wlan configuration loaded from config.h:
+const char *ssid = WIFI_PASSWORD;
+const char *password = WIFI_SSID;
+
+// MQTT configuration loaded from config.h
+const char *mqtt_server = MQTT_SERVER_IP;
+const char *mqtt_user = MQTT_USER_LEDSTRIP;
+const char *mqtt_password = MQTT_PASSWORD_LEDSTRIP;
+
+
+const char *mqtt_clientID = "ESP8266ClientLED_Strip";
 
 WiFiClient espClient;
 PubSubClient client(espClient);
@@ -389,11 +400,19 @@ void reconnect()
 
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
-    if (client.connect("ESP8266Client"))
+    boolean connectionResult = false;
+    if(MQTT_PASSWORD == "" && MQTT_USER == ""){
+        connectionResult = client.connect(mqtt_clientID);
+    }
+    else{
+        connectionResult = client.connect(mqtt_clientID, mqtt_user, mqtt_password);
+    }
+
+    if (connectionResult)
     {
         Serial.println("connected");
         // Once connected, publish an announcement...
-        //client.publish("display/online", "hello world");
+        // client.publish("display/online", "hello world");
         // ... and resubscribe
         client.subscribe(mqttPath);
     }
@@ -401,9 +420,6 @@ void reconnect()
     {
         Serial.print("failed, rc=");
         Serial.print(client.state());
-        Serial.println(" try again in 1 second");
-        // Wait 1 second before retrying
-        //delay(1000);
     }
 }
 
