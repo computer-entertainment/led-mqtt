@@ -42,6 +42,8 @@ CRGB fadeOutColors[NUM_LEDS];
 
 //current Animation variables:
 uint32_t currentFrame = 0;
+CRGB currentColor = CRGB(0);
+
 
 const char *mqttPath = "display/#";
 unsigned long lastFrameTime = 0;
@@ -51,7 +53,6 @@ unsigned long currentMillis = 0;
 unsigned long fadeStartTime = 0;
 
 uint8_t colorOffset = 0;
-CHSV offsetColor = CHSV(0,0,0);
 
 bool fadeDone = true;
 
@@ -70,6 +71,7 @@ void loadDefaultLedState()
     myLedState.decay = (uint8_t)200;
     myLedState.colorRotation = (float)1;
     myLedState.animationSize = (uint16_t)10;
+    myLedState.colorRotationEffect = (uint8_t)20;
 }
 
 void printLedState()
@@ -93,6 +95,8 @@ void printLedState()
     Serial.println(myLedState.animationSize, HEX);
     Serial.print("colorRotation: ");
     Serial.println(myLedState.colorRotation);
+    Serial.print("colorRotationEffect: ");
+    Serial.println(myLedState.colorRotationEffect);
     Serial.println("-------");
 }
 
@@ -102,11 +106,11 @@ void finishFade()
     fadeDone = true;
 }
 
-void fillColor(CRGB color, CRGB *target = leds, uint16_t from = 0, uint16_t to = NUM_LEDS)
+void fillColor(CRGB *target = leds, struct ledState pLedState = myLedState, uint16_t from = 0, uint16_t to = NUM_LEDS)
 {
     for (int i = from; i < to; i++)
     {
-        target[i] = color + offsetColor;
+        target[i] = currentColor;
     }
 }
 
@@ -126,12 +130,12 @@ void knightRider(uint32_t frame, CRGB *target = leds, struct ledState pLedState 
     if (temp < to - from)
     { //Hinweg von from zu to
         //Serial.println(from + temp);
-        target[from + temp] = CRGB(pLedState.color) + offsetColor;
+        target[from + temp] = currentColor;
     }
     else
     {
         //Serial.println(to - temp + to - from);
-        target[to - temp + to - from] = pLedState.color + offsetColor;
+        target[to - temp + to - from] = currentColor;
     }
 }
 
@@ -139,7 +143,7 @@ void strope(uint32_t frame, CRGB *target = leds, struct ledState pLedState = myL
 {
     if (frame % pLedState.animationSize == 0)
     {
-        fillColor(pLedState.color, target, from, to);
+        fillColor(target, pLedState, from, to);
     }
 }
 
@@ -184,7 +188,7 @@ void setup()
 
     FastLED.setBrightness(myLedState.brightness);
 
-    fillColor(CRGB(myLedState.color));
+    fillColor(leds, myLedState);
 
     FastLED.show();
 
@@ -195,7 +199,7 @@ void setup()
 
     if (client.connected())
     {
-        fillColor(0x00AA00, 0, 300);
+        fill_solid(leds, NUM_LEDS, 0x00AA00);
         FastLED.show();
         delay(1000);
     }
@@ -210,6 +214,11 @@ void decayArea(uint8_t dimVal, CRGB *target = leds, uint16_t from = 0, uint16_t 
 
 void calculateLedColors(uint16_t frame, struct ledState pLedState = myLedState, CRGB *target = leds)
 {
+    currentColor = CRGB(pLedState.color);
+
+    nblend(currentColor, CRGB(CHSV(colorOffset, 255, 255)), (fract8) pLedState.colorRotationEffect);
+
+    
     switch (pLedState.animationId)
     {
     case 0:
@@ -217,8 +226,7 @@ void calculateLedColors(uint16_t frame, struct ledState pLedState = myLedState, 
         FastLED.show();
         break;
     case 1:
-        fillColor(CRGB(pLedState.color));
-
+        fillColor(target, pLedState);
         break;
     case 2:
         rainbow(frame);
@@ -301,11 +309,9 @@ void loop()
             if (myLedState.colorRotation != 0)
             {
                 colorOffset = (uint8_t) (myLedState.colorRotation * currentFrame) %255;
-                offsetColor = CHSV(colorOffset, 125, 125);
             }
             else{
                 colorOffset = 0;
-                offsetColor = CHSV(0,0,0);
             }
 
             calculateLedColors(currentFrame, myLedState);
@@ -315,7 +321,7 @@ void loop()
         }
         else if (WiFi.status() != WL_CONNECTED)
         {
-            fillColor(CRGB(0xFF0000), 0, 10); // setze die ersten 10 leds auf rot, wenn die Wlan verbindung unterbrochen ist.
+            fill_solid(leds, 10, CRGB(0xFF0000)); // setze die ersten 10 leds auf rot, wenn die Wlan verbindung unterbrochen ist.
             setup_wifi(false, 20);
         }
         else if (!client.connected())
@@ -345,7 +351,7 @@ void updateLEDState()
     if (newLedState.fadeSpeed > 0)
     {
         fadeDone = false;
-        fillColor(0, fadeInColors);
+        fill_solid(fadeInColors, NUM_LEDS, 0);
         memmove8(fadeOutColors, leds, NUM_LEDS * sizeof(CRGB));
         fadeStartTime = millis();
     }
@@ -362,7 +368,7 @@ void MQTTCallback(char *topic, byte *payload, unsigned int length)
     Serial.print("] ");
 
     Serial.print(" payload: ");
-    for (int i = 0; i < length; i++)
+    for (unsigned int i = 0; i < length; i++)
     {
         Serial.print(payload[i], HEX);
         Serial.print(" ");
@@ -401,7 +407,7 @@ void reconnect()
     Serial.print("Attempting MQTT connection...");
     // Attempt to connect
     boolean connectionResult = false;
-    if(mqtt_password == "" && mqtt_user == ""){
+    if(strncmp(mqtt_password, "", 1) == 0 && strncmp(mqtt_user, "", 1) == 0){
         connectionResult = client.connect(mqtt_clientID);
     }
     else{

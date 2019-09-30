@@ -34,6 +34,9 @@ Animation und Parametern für diese Animation.
 - `fadeSpeed` (`uint16`)  
   Dauer einer Überblendung, größere Werte bedeuten eine längere
   Überblendungszeit.
+- `colorRotationEffect` (`uint8`)  
+  Gibt an wieviel von der Ursprünglichen Farbe, die durch `color` gesetzt wird, erhalten bleibt.
+  Bei einem Wert von `0` wird `colorRotation` ignoriert, bei einem Wert von `255` wird `color` ignoriert.
 
 # Kennzahlen
 Die Animationen und Überblendungen werden von Kennzahlen beschrieben.
@@ -43,6 +46,8 @@ Die Animationen und Überblendungen werden von Kennzahlen beschrieben.
 - `1`: Solide Farbe
   - Die Farbe wird durch `color` festgelegt
 - `2`: Regenbogen
+- `3`: Knight Rider 
+- `4`: Strope 
 
 ## Überblendungen
 - 

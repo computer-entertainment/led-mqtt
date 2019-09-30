@@ -11,6 +11,7 @@ struct ledState {
     uint8_t decay;
     uint8_t fadeId;
     uint16_t fadeSpeed;
+    uint8_t colorRotationEffect;
 };
 
 #pragma pack(pop)
