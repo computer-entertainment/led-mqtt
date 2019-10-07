@@ -85,7 +85,7 @@
   <p2>
     <h2> Stroboskop (0/10) </h2>
     <div class="button-wrapper">
-      <button type="button" id="st">Stroboskop</button> <input type="number" id="pulse" min="0" max="10"></input>
+      <button type="button" id="st">Stroboskop</button> <input type="number" id="pulse" min="0" max="10" value="3"></input>
     </div>
   </p2>
 
@@ -100,17 +100,17 @@
     <h2> Einstellungen </h2>
     <h3> Brightness (0/80)  |  Speed (0/2000)  |  <p11>R</p11><p10>E</p10><p11>G</p11><p12>E</p12><p10>N</p10><p11>B</p11>O<p12>G</p12><p10>E</p10><p11>N</p11>  (-50/50)  |  Decay  (0/255)  |  FadeSpeed  (0/50000) </h3>
     <div class="button-wrapper">
-      <input type="number" id="bn" min="0" max="80"></input>  |  <input type="number" id="sp" min="0" max="2000"></input>  |  <input type="number" id="rg" min="-50" max="50" step="0.05"></input>  |  <input type="number" id="dc" min="0" max="255"></input>  |  <input type="number" id="fd" min="0" max="50000"></input>
+      <input type="number" id="bn" min="0" max="80" value="50"></input>  |  <input type="number" id="sp" min="0" max="2000" value="100"></input>  |  <input type="number" id="rg" min="-50" max="50" step="0.05" value="1"></input>  |  <input type="number" id="dc" min="0" max="255" value="120"></input>  |  <input type="number" id="fd" min="0" max="50000" value="0"></input>
     </div>  
     <h3> <p10> Rot (0/255) </p10> | <p11>  Grün (0/255) </p11>  | <p12>  Blau  (0/255) </p12> </h3>
     <div class="button-wrapper">
-      <input type="number" id="rot" min="0" max="255">  |  <input type="number" id="grün" min="0" max="255">  |  <input type="number" id="blau" min="0" max="255">
+      <input type="number" id="rot" min="0" max="255", value="120">  |  <input type="number" id="grün" min="0" max="255" value="0">  |  <input type="number" id="blau" min="0" max="255" value="0">
     </div>
   </p6>
 
 <script>
-    // const urli = "wss://172.16.3.193:10001"
-// const connection = new WebSocket(urli)t, port,
+
+
   var client;
   function knightRider(){
 	if(client.isConnected()){
@@ -144,14 +144,15 @@
   }
 
   function regenb(){
-      if(ylient.isConnected()){
+      if(client.isConnected()){
 	  client.send("input/animationId", "2")
       }
   }
     
 
+
   window.onload = function() {
-      client = new Paho.MQTT.Client("172.16.3.193", 10001, "/mqtt", "ID");
+      client = new Paho.MQTT.Client("192.168.4.72", 10001, "/mqtt", "ID");
       client.connect({
 	  mqttVersion: 3,
 	  onSuccess: function(response) {console.log("connected");}
